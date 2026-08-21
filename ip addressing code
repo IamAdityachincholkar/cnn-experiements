@@ -1,0 +1,109 @@
+# SUBNETTING
+# Subnetting = dividing one large network into smaller networks (subnets).
+
+# LOOPBACK ADDRESS
+# 127.0.0.1 is the most common loopback address (localhost).
+# It is used by a computer to communicate with itself.
+
+# HOSTS = 2^host_bits - 2
+# -1 for the Network Address
+# -1 for the Broadcast Address
+# Therefore, usable hosts = total addresses - 2
+
+
+ip = input("Enter an IP Address (e.g., 192.168.1.10): ")
+
+octets = list(map(int, ip.split(".")))
+first = octets[0]
+
+
+# Check Loopback
+if 127 <= first <= 127:
+    print("\nLoopback Address")
+    exit()
+
+
+# Determine IP Class
+if 1 <= first <= 126:
+    ip_class, default_prefix = "Class A", 8
+
+elif 128 <= first <= 191:
+    ip_class, default_prefix = "Class B", 16
+
+elif 192 <= first <= 223:
+    ip_class, default_prefix = "Class C", 24
+
+elif 224 <= first <= 239:
+    ip_class, default_prefix = "Class D (Multicast)", None
+
+elif 240 <= first <= 255:
+    ip_class, default_prefix = "Class E (Experimental)", None
+
+else:
+    ip_class, default_prefix = "Invalid", None
+
+
+print("IP Class:", ip_class)
+
+
+if default_prefix is None:
+    print("Subnetting is generally not applicable.")
+    exit()
+
+
+# Default Subnet Mask
+default_mask = {
+    8: "255.0.0.0",
+    16: "255.255.0.0",
+    24: "255.255.255.0"
+}[default_prefix]
+
+print("Default Subnet Mask:", default_mask)
+
+
+# Borrow bits for subnetting
+borrow = int(input("Enter number of bits to borrow: "))
+
+new_prefix = default_prefix + borrow
+
+if new_prefix > 30:
+    print("Invalid number of borrowed bits.")
+    exit()
+
+
+# Create Subnet Mask
+mask = []
+bits = new_prefix
+
+for i in range(4):
+
+    if bits >= 8:
+        mask.append(255)
+        bits -= 8
+
+    elif bits > 0:
+        mask.append(256 - 2 ** (8 - bits))
+        bits = 0
+
+    else:
+        mask.append(0)
+
+
+subnet_mask = ".".join(map(str, mask))
+
+
+# Calculate subnets and hosts
+subnets = 2 ** borrow
+host_bits = 32 - new_prefix
+hosts = 2 ** host_bits - 2
+
+
+print("\n----- Result -----")
+print("IP Address      :", ip)
+print("IP Class        :", ip_class)
+print("Default Mask    :", default_mask)
+print("Borrowed Bits   :", borrow)
+print("New Prefix      : /" + str(new_prefix))
+print("New Subnet Mask :", subnet_mask)
+print("Number of Subnets:", subnets)
+print("Hosts per Subnet :", hosts)
